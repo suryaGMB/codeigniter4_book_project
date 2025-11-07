@@ -72,6 +72,7 @@ Create a database named: ci4_bookstore
 ### 2. Install Dependencies
 ```bash
 composer install
+```
 
 ### 3. . Copy Environment File
 cp env .env
