@@ -33,7 +33,7 @@ class Auth extends BaseController
             'name'     => $this->request->getPost('name'),
             'email'    => $this->request->getPost('email'),
             'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'role'     => 'user', // force normal user
+            'role'     => 'user',
         ]);
 
         return redirect()->to('/login')->with('message', 'Registration successful. Please login.');

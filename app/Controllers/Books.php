@@ -106,12 +106,10 @@ class Books extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Book not found');
         }
 
-        // --- Validation (PDF optional). max_size in KB (128 MB => 131072)
         $rules = [
             'title'  => 'required|min_length[2]|max_length[255]',
             'author' => 'required|min_length[2]|max_length[255]',
             'price'  => 'required|decimal',
-            // validate only if the field exists in request
             'pdf'    => 'if_exist|max_size[pdf,131072]|ext_in[pdf,pdf]|mime_in[pdf,application/pdf,application/x-pdf,application/acrobat,applications/vnd.pdf,text/pdf,application/octet-stream]',
         ];
 
@@ -120,7 +118,7 @@ class Books extends BaseController
         }
 
         $data = [
-            'id'     => $id, // IMPORTANT for Model::save()
+            'id'     => $id,
             'title'  => $this->request->getPost('title'),
             'author' => $this->request->getPost('author'),
             'price'  => $this->request->getPost('price'),
@@ -128,10 +126,8 @@ class Books extends BaseController
 
         $pdf = $this->request->getFile('pdf');
 
-        // If a file field is present and user selected a file, handle it
         if ($pdf && $pdf->getError() !== UPLOAD_ERR_NO_FILE) {
 
-            // Map common PHP upload errors to friendly messages
             $err = $pdf->getError();
             if (in_array($err, [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)) {
                 $umf = ini_get('upload_max_filesize') ?: 'unknown';
@@ -145,8 +141,7 @@ class Books extends BaseController
                 ]);
             }
 
-            // App-side cap (optional)
-            $maxBytes = 128 * 1024 * 1024; // 128 MB
+            $maxBytes = 128 * 1024 * 1024;
             if ($pdf->getSize() > $maxBytes) {
                 return redirect()->back()->withInput()->with('errors', [
                     'pdf' => 'PDF is larger than the allowed 128 MB application limit.'
@@ -159,7 +154,6 @@ class Books extends BaseController
                 ]);
             }
 
-            // Move to writable/uploads/books
             $target = WRITEPATH . 'uploads/books';
             if (! is_dir($target)) {
                 @mkdir($target, 0777, true);
@@ -169,7 +163,6 @@ class Books extends BaseController
                 $newName = $pdf->getRandomName();
                 $pdf->move($target, $newName);
 
-                // Delete old file if it existed
                 if (! empty($book['pdf_file'])) {
                     @unlink($target . '/' . $book['pdf_file']);
                 }
